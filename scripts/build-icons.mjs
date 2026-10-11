@@ -17,20 +17,18 @@ const missing = [];
 for (const name of names) {
   const upstreamName = aliases[name] ?? name;
   const url = upstream + upstreamName + ".svg";
-  let response = await fetch(url);
-  // Keep the generated sprite valid if upstream renames or removes an icon.
+  const response = await fetch(url);
   if (!response.ok) {
-    console.warn(`Missing ${upstreamName}; using Tabler circle as a fallback for ${name}`);
-    response = await fetch(upstream + "circle.svg");
+    missing.push(name + " -> " + upstreamName + " (HTTP " + response.status + ")");
+    continue;
   }
-  if (!response.ok) throw new Error("Cannot fetch upstream Tabler SVG for " + name + ": HTTP " + response.status);
   const svg = await response.text();
   const match = svg.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/);
   if (!match) throw new Error("Malformed upstream SVG: " + name);
   const content = match[1].replace(/<!--([\s\S]*?)-->/g,"").trim();
   symbols.push('<symbol id="tabler-' + name + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + content + '</symbol>');
 }
-if (missing.length) throw new Error("Missing upstream Tabler icons: " + missing.join(", "));
+if (missing.length) throw new Error("Missing upstream Tabler icons:\n" + missing.join("\n"));
 await mkdir("assets",{recursive:true});
 await writeFile("assets/icons-sprite.svg", '<svg xmlns="http://www.w3.org/2000/svg">\n' + symbols.join("\n") + '\n</svg>\n');
 console.log("Generated " + symbols.length + " genuine Tabler icons for " + mappings.length + " Discourse mappings");
