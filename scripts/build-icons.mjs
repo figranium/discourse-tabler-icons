@@ -7,6 +7,7 @@ const aliases = {
  alert:"alert-triangle",help:"help-circle",grid:"layout-grid",quote:"quote",
  shield:"shield-check",check_square:"checkbox",mail:"mail",sort:"arrows-sort",
  reply:"arrow-back-up",refresh:"refresh",pin:"pin",calendar:"calendar",
+ unlock:"lock-open",image:"photo",
  "check-square":"checkbox"
 };
 const js = await readFile("javascripts/discourse/api-initializers/tabler-icons.js","utf8");
