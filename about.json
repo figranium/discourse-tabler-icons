@@ -1,0 +1,10 @@
+{
+  "name": "Discourse Tabler Icons",
+  "description": "Tabler-style outline icons for Discourse",
+  "about_url": "https://github.com/figranium/discourse-tabler-icons",
+  "license_url": "https://github.com/figranium/discourse-tabler-icons/blob/main/LICENSE",
+  "component": true,
+  "assets": {
+    "icons-sprite": "/assets/icons-sprite.svg"
+  }
+}
