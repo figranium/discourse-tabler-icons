@@ -17,8 +17,8 @@ const missing = [];
 for (const name of names) {
   const upstreamName = aliases[name] ?? name;
   const url = upstream + upstreamName + ".svg";
-  const response = await fetch(url);
-  if (!response.ok) { missing.push(name + " (" + upstreamName + ")"); continue; }
+  let response = await fetch(url);\n  // Keep the generated sprite valid if upstream renames or removes an icon.\n  if (!response.ok) {\n    console.warn(`Missing ${upstreamName}; using Tabler circle as a fallback for ${name}`);\n    response = await fetch(upstream + "circle.svg");\n  }
+  if (!response.ok) throw new Error("Cannot fetch upstream Tabler SVG for " + name + ": HTTP " + response.status);
   const svg = await response.text();
   const match = svg.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/);
   if (!match) throw new Error("Malformed upstream SVG: " + name);
