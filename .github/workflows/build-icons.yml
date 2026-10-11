@@ -1,10 +1,10 @@
-name: Build authentic Tabler icons
+name: Build and validate Tabler icons
 on:
   push:
     branches: [main]
     paths:
-      - 'scripts/build-icons.mjs'
-      - 'javascripts/discourse/api-initializers/**'
+      - 'scripts/**'
+      - 'javascripts/**'
       - '.github/workflows/build-icons.yml'
   workflow_dispatch:
 permissions:
@@ -17,11 +17,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Generate canonical Tabler sprite
+      - name: Generate genuine Tabler SVG sprite
         run: node scripts/build-icons.mjs
+      - name: Check symbol coverage and valid XML
+        run: |
+          python3 - <<'PY'
+          import re
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          js = Path('javascripts/discourse/api-initializers/tabler-icons.js').read_text()
+          svg = Path('assets/icons-sprite.svg').read_text()
+          ET.fromstring(svg)
+          names = set(re.findall(r'api\.replaceIcon\("[^"]+", "([^"]+)"\)', js))
+          symbols = set(re.findall(r'<symbol id="([^"]+)"', svg))
+          assert names == symbols, f'Missing: {names-symbols}; extra: {symbols-names}'
+          print(f'Validated {len(symbols)} Tabler symbols')
+          PY
       - name: Commit generated sprite
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/icons-sprite.svg
-          git diff --cached --quiet || (git commit -m "Build sprite from upstream Tabler Icons" && git push)
+          if ! git diff --cached --quiet; then
+            git commit -m "build: generate genuine Tabler icon sprite"
+            git push
+          fi
